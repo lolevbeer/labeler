@@ -36,8 +36,11 @@ export function BeerSelect({ onSelect }: { onSelect: (b: BeerInfo) => void }) {
   const [selected, setSelected] = useState("")
 
   useEffect(() => {
-    // Same-origin path; Vite proxies it to https://lolev.beer/api (see vite.config).
-    fetch("/lolev-api/beers?limit=500")
+    // Dev: same-origin path proxied by Vite to lolev.beer (see vite.config).
+    // Prod (static host, no proxy): hit lolev.beer directly — works because its
+    // Payload `cors: allowedOrigins` includes this site's origin.
+    const base = import.meta.env.DEV ? "/lolev-api" : "https://lolev.beer/api"
+    fetch(`${base}/beers?limit=500`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((j: { docs?: ApiBeer[] }) =>
         setBeers((j.docs ?? []).filter((b) => b?.name && !b.hideFromSite)),
