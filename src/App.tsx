@@ -37,12 +37,7 @@ const DEFAULTS: Fields = {
 
 // Persisted across reloads. Net contents and the manufacturing address are
 // intentionally excluded so they always reset to their defaults each session.
-const PERSIST_KEYS: (keyof Fields)[] = [
-  "beer",
-  "style",
-  "abv",
-  "packaged",
-]
+const PERSIST_KEYS: (keyof Fields)[] = ["beer", "style", "abv", "packaged"]
 
 function loadPersisted(): Partial<Fields> {
   try {
@@ -53,6 +48,24 @@ function loadPersisted(): Partial<Fields> {
     const out: Partial<Fields> = {}
     for (const k of PERSIST_KEYS) {
       if (typeof saved[k] === "string") out[k] = saved[k] as string
+    }
+    return out
+  } catch {
+    return {}
+  }
+}
+
+// The local print server (vite-plugin-rollo-print) re-renders the app headless
+// with the chosen fields passed as a base64-JSON `?f=` param, then prints the
+// captured PDF. Read that param so a headless render shows the right label.
+function loadFromParam(): Partial<Fields> {
+  try {
+    const f = new URLSearchParams(location.search).get("f")
+    if (!f) return {}
+    const obj = JSON.parse(atob(f)) as Record<string, unknown>
+    const out: Partial<Fields> = {}
+    for (const k of Object.keys(DEFAULTS) as (keyof Fields)[]) {
+      if (typeof obj[k] === "string") out[k] = obj[k] as string
     }
     return out
   } catch {
@@ -73,7 +86,11 @@ export default function App() {
   const [fields, setFields] = useState<Fields>(() => ({
     ...DEFAULTS,
     ...loadPersisted(),
+    ...loadFromParam(),
   }))
+  const [status, setStatus] = useState<"idle" | "printing" | "sent" | string>(
+    "idle",
+  )
 
   useEffect(() => {
     const data: Record<string, string> = {}
@@ -87,6 +104,36 @@ export default function App() {
 
   const setField = (key: keyof Fields, value: string) =>
     setFields((prev) => ({ ...prev, [key]: value }))
+
+  // Print straight to the Rollo via the local print server. If that server isn't
+  // there (static deploy / no printer), fall back to the browser print dialog.
+  async function printLabel() {
+    setStatus("printing")
+    try {
+      const res = await fetch("/print", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(fields),
+      })
+      if (res.ok) {
+        setStatus("sent")
+        return
+      }
+      if (res.status === 500) {
+        const { error } = (await res.json().catch(() => ({}))) as {
+          error?: string
+        }
+        setStatus(`Print failed: ${error ?? "see terminal"}`)
+        return
+      }
+      // 404/405 → no local print server here; use the browser dialog instead.
+      setStatus("idle")
+      window.print()
+    } catch {
+      setStatus("idle")
+      window.print()
+    }
+  }
 
   return (
     <main className="min-h-screen bg-muted/40 px-6 py-10">
@@ -122,15 +169,20 @@ export default function App() {
                   )}
                 </div>
               ))}
-              <Button className="mt-2" onClick={() => window.print()}>
+              <Button
+                className="mt-2"
+                disabled={status === "printing"}
+                onClick={printLabel}
+              >
                 <Printer />
-                Print label
+                {status === "printing" ? "Printing…" : "Print label"}
               </Button>
               <p className="text-muted-foreground text-xs leading-relaxed">
-                First time: in the print dialog pick your Rollo, set Margins =
-                None, Scale = 100%, paper = 3×2 landscape (3 wide × 2 tall). If
-                it still prints rotated, set the Rollo's default paper to 3×2 in
-                your system printer settings. Then it's one click.
+                {status === "sent"
+                  ? "Sent to the Rollo ✓"
+                  : status !== "idle" && status !== "printing"
+                    ? status
+                    : "Prints straight to the calibrated Rollo (3×2, 203 dpi). No print dialog needed."}
               </p>
             </CardContent>
           </Card>

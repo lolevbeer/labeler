@@ -83,11 +83,11 @@
   justify-content: center;
   gap: 0.06in;
   font-weight: 700;
-  font-size: 11pt;
+  font-size: 14pt;
   letter-spacing: 0.02em;
 }
 .label .brewery .logo {
-  height: 0.24in;
+  height: 0.3in;
   width: auto;
   flex: none;
 }
@@ -139,8 +139,21 @@
 }
 
 @media print {
+  /* The label is a landscape 3×2 design, printed upright on a matching 3×2 page
+     (this is correct for a Rollo roll loaded 3in-wide). Some setups have the
+     driver treat the roll as portrait and rotate the output ("sideways"); for
+     those, the UI's rotate toggle injects a <style> that overrides @page to a
+     2×3 portrait page and rotates the design 90° to compensate (see App.tsx).
+     That override is verified to cascade over this rule in Chrome's print path. */
+  /* Page is 1.9in (0.1in short of the 2in stock) so it never exceeds the 1.9in
+     form length we feed the Rollo (see FEED in vite-plugin-rollo-print.ts) — if
+     the PDF page were taller than the form, the bottom would be clipped. NOTE:
+     this @page shortening does NOT by itself stop the "second blank label"
+     overshoot; that's fixed by the shorter CUPS form length, not here. Keep the
+     two in sync. The .label height is capped to match so the design fits on one
+     page. */
   @page {
-    size: 3in 2in;
+    size: 3in 1.9in;
     margin: 0;
   }
   html,
@@ -159,6 +172,7 @@
     position: fixed;
     left: 0;
     top: 0;
+    height: 1.9in; /* match the shortened @page; see note above */
     box-shadow: none;
     zoom: 1;
   }
