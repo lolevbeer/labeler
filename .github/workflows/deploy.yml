@@ -20,16 +20,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      # Strict install from the lockfile (reproducible build). The lockfile
-      # records all platforms' optional native deps (Tailwind oxide + @emnapi
-      # wasm fallback), so this resolves on the Linux runner too.
-      - run: npm ci
+          cache: pnpm
+      # Frozen install from pnpm-lock.yaml (reproducible, like npm ci). pnpm
+      # records every platform's optional native deps, so this macOS-generated
+      # lock resolves on the Linux runner — which npm's lockfile could not do.
+      - run: pnpm install --frozen-lockfile
       # Project Pages serve under /<repo>/, so set the asset base accordingly.
-      - run: npm run build -- --base=/labeler/
+      - run: pnpm build -- --base=/labeler/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
