@@ -128,7 +128,9 @@ export default function App() {
               </Button>
               <p className="text-muted-foreground text-xs leading-relaxed">
                 First time: in the print dialog pick your Rollo, set Margins =
-                None, Scale = 100%, paper = 3×2. Then it's one click.
+                None, Scale = 100%, paper = 3×2 landscape (3 wide × 2 tall). If
+                it still prints rotated, set the Rollo's default paper to 3×2 in
+                your system printer settings. Then it's one click.
               </p>
             </CardContent>
           </Card>
