@@ -24,7 +24,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      # npm install (not ci): the macOS-generated lockfile omits Linux-only
+      # optional deps (Tailwind oxide's wasm fallback -> @emnapi/*), which makes
+      # strict `npm ci` fail on the Linux runner.
+      - run: npm install --no-audit --no-fund
       # Project Pages serve under /<repo>/, so set the asset base accordingly.
       - run: npm run build -- --base=/labeler/
       - uses: actions/upload-pages-artifact@v3
