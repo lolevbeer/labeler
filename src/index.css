@@ -140,7 +140,9 @@
 
 @media print {
   @page {
-    size: 3in 2in;
+    /* Portrait page to match the Rollo's default media so the driver doesn't
+       rotate it; the landscape label is rotated to fit (see .label below). */
+    size: 2in 3in;
     margin: 0;
   }
   html,
@@ -161,5 +163,12 @@
     top: 0;
     box-shadow: none;
     zoom: 1;
+    /* Rotate the 3x2 landscape label onto the 2x3 portrait page so it prints
+       upright on the Rollo's default portrait media — no per-print orientation
+       change. If it prints upside-down, swap to:
+       transform: translateY(3in) rotate(-90deg). Print-only; screen preview
+       stays unrotated and legible. */
+    transform: translateX(2in) rotate(90deg);
+    transform-origin: top left;
   }
 }
