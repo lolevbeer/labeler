@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { BeerSelect } from "@/components/BeerSelect"
 import { DatePicker } from "@/components/DatePicker"
 import { LabelPreview } from "@/components/LabelPreview"
 
@@ -96,6 +97,12 @@ export default function App() {
               <CardTitle>Create a Keg label</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
+              <div className="grid gap-1.5">
+                <Label>Load from lolev.beer</Label>
+                <BeerSelect
+                  onSelect={(b) => setFields((prev) => ({ ...prev, ...b }))}
+                />
+              </div>
               {FORM_FIELDS.map(({ key, label, type }) => (
                 <div key={key} className="grid gap-1.5">
                   <Label htmlFor={key}>{label}</Label>

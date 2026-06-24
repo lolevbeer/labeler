@@ -19,13 +19,18 @@ function withPercent(abv: string): string {
   return v ? `${v}%` : ""
 }
 
-// True title case: lowercase everything, then capitalize the first letter of
-// each word. Unlike CSS `text-transform: capitalize`, this fixes ALL-CAPS input
-// ("JAGUAR" -> "Jaguar"). Note: acronyms like "IPA" become "Ipa".
+// True title case: capitalize the first letter of each word, lowercasing the
+// rest, so ALL-CAPS input ("JAGUAR") becomes "Jaguar". Words that are valid
+// Roman numerals (e.g. a volume "III") stay fully uppercase instead of "Iii".
+// The strict pattern avoids matching ordinary words made of I/V/X/L/C/D/M.
+const ROMAN = /^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i
+
 function titleCase(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/(^|[^\p{L}])(\p{L})/gu, (_, sep, ch) => sep + ch.toUpperCase())
+  return s.replace(/\p{L}+/gu, (w) =>
+    w.length > 1 && ROMAN.test(w)
+      ? w.toUpperCase()
+      : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
+  )
 }
 
 export function LabelPreview({
