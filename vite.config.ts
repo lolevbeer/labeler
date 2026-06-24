@@ -14,11 +14,15 @@ const lolevProxy = {
   },
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // GitHub Pages serves this project under /labeler/, so built asset URLs must
+  // be prefixed. Dev stays at root. (Set declaratively here rather than via a
+  // `vite build --base` flag, which pnpm doesn't forward through the script.)
+  base: command === "build" ? "/labeler/" : "/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
   },
   server: { port: 5174, strictPort: true, proxy: lolevProxy },
   preview: { port: 5174, strictPort: true, proxy: lolevProxy },
-})
+}))

@@ -29,8 +29,8 @@ jobs:
       # records every platform's optional native deps, so this macOS-generated
       # lock resolves on the Linux runner — which npm's lockfile could not do.
       - run: pnpm install --frozen-lockfile
-      # Project Pages serve under /<repo>/, so set the asset base accordingly.
-      - run: pnpm build -- --base=/labeler/
+      # base path (/labeler/) is set in vite.config.ts.
+      - run: pnpm build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
