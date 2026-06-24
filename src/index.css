@@ -166,9 +166,9 @@
     /* Rotate the 3x2 landscape label onto the 2x3 portrait page so it prints
        upright on the Rollo's default portrait media — no per-print orientation
        change. If it prints upside-down, swap to:
-       transform: translateY(3in) rotate(-90deg). Print-only; screen preview
+       transform: translateX(2in) rotate(90deg). Print-only; screen preview
        stays unrotated and legible. */
-    transform: translateX(2in) rotate(90deg);
+    transform: translateY(3in) rotate(-90deg);
     transform-origin: top left;
   }
 }
