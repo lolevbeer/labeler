@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ---- Keg label: custom, print-exact (not a shadcn component) ---- */
+.label {
+  box-sizing: border-box;
+  width: 3in;
+  height: 2in;
+  background: #fff;
+  color: #000;
+  border-radius: 8px;
+  zoom: 1.6; /* screen-only enlarge; reset to 1 in @media print */
+  padding: 0.16in 0.18in;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  font-family: "Poppins", Arial, Helvetica, sans-serif;
+  line-height: 1.18;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.label .brewery {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.06in;
+  font-weight: 700;
+  font-size: 11pt;
+  letter-spacing: 0.02em;
+}
+.label .brewery .logo {
+  height: 0.24in;
+  width: auto;
+  flex: none;
+}
+.label .beer {
+  font-weight: 800;
+  font-size: 18pt;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: capitalize;
+}
+.label .style {
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-top: 0.05in;
+}
+.label .foot {
+  width: 100%;
+  padding-top: 0.04in;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05in;
+}
+.label .meta {
+  font-size: 7.5pt;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.label .meta b {
+  font-weight: 800;
+}
+.label .net-contents {
+  font-size: 8pt;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.label .net-contents b {
+  font-weight: 800;
+}
+.label .addr {
+  font-size: 6.5pt;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+@media print {
+  @page {
+    size: 3in 2in;
+    margin: 0;
+  }
+  html,
+  body {
+    background: #fff;
+    margin: 0;
+  }
+  main {
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+  .form-panel {
+    display: none !important;
+  }
+  .label {
+    position: fixed;
+    left: 0;
+    top: 0;
+    border: none;
+    box-shadow: none;
+    zoom: 1;
+  }
+}
