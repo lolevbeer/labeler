@@ -83,11 +83,11 @@
   justify-content: center;
   gap: 0.06in;
   font-weight: 700;
-  font-size: 16pt;
+  font-size: 14pt;
   letter-spacing: 0.02em;
 }
 .label .brewery .logo {
-  height: 0.55in;
+  height: 0.4in;
   width: auto;
   flex: none;
 }
@@ -139,12 +139,13 @@
 }
 
 @media print {
-  /* The label is a landscape 3×2 design, printed upright on a matching 3×2 page
-     (this is correct for a Rollo roll loaded 3in-wide). Some setups have the
-     driver treat the roll as portrait and rotate the output ("sideways"); for
-     those, the UI's rotate toggle injects a <style> that overrides @page to a
-     2×3 portrait page and rotates the design 90° to compensate (see App.tsx).
-     That override is verified to cascade over this rule in Chrome's print path. */
+  /* Landscape 3×2 label on a matching landscape page. This is the rule the
+     headless lp-server render (--print-to-pdf) uses, and it prints upright via
+     CUPS. The interactive window.print() path (static / GitHub Pages, where no lp
+     server exists) is different: the Rollo driver rotates a landscape page to
+     portrait in the dialog, so browserPrint() in App.tsx injects a portrait @page
+     + 90° rotation to cancel it. That injected override only exists during
+     window.print() and cascades over this rule; the render path never sees it. */
   /* Page is 1.9in (0.1in short of the 2in stock) so it never exceeds the 1.9in
      form length we feed the Rollo (see FEED in vite-plugin-rollo-print.ts) — if
      the PDF page were taller than the form, the bottom would be clipped. NOTE:

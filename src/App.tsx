@@ -93,6 +93,25 @@ const FORM_FIELDS: { key: keyof Fields; label: string; type?: string }[] = [
   { key: "address", label: "Manufactured at" },
 ]
 
+// GitHub Pages (static) has no /print server, so printing falls back to the
+// browser's window.print(). Through the print dialog the Rollo driver rotates a
+// landscape page to portrait, so the label prints sideways. Compensate by
+// injecting a portrait @page and pre-rotating the design 90°, so the driver's
+// rotation lands it back upright. This override is injected only for the
+// interactive print — the headless lp-server render (--print-to-pdf, which never
+// calls window.print()) keeps the plain landscape @page in index.css and is
+// unaffected. If a test label comes out upside-down/mirrored, flip the transform
+// to `translateY(3in) rotate(-90deg)`.
+function browserPrint(): void {
+  const style = document.createElement("style")
+  style.textContent =
+    "@media print{@page{size:2in 3in;margin:0}" +
+    ".label{transform-origin:top left;transform:translateX(1.9in) rotate(90deg)}}"
+  document.head.append(style)
+  window.addEventListener("afterprint", () => style.remove(), { once: true })
+  window.print()
+}
+
 export default function App() {
   const [fields, setFields] = useState<Fields>(() => ({
     ...DEFAULTS,
@@ -140,10 +159,10 @@ export default function App() {
       }
       // 404/405 → no local print server here; use the browser dialog instead.
       setStatus("idle")
-      window.print()
+      browserPrint()
     } catch {
       setStatus("idle")
-      window.print()
+      browserPrint()
     }
   }
 
