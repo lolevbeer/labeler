@@ -13,6 +13,12 @@ import { LabelPreview } from "@/components/LabelPreview"
 const BREWERY = "Lolev Beer"
 const STORE = "lolev-label"
 
+// Print runs are capped so a stray keystroke can't fire off a whole roll. The
+// server clamps to the same ceiling authoritatively.
+const MAX_COPIES = 50
+const clampCopies = (n: number): number =>
+  Number.isFinite(n) && n >= 1 ? Math.min(Math.floor(n), MAX_COPIES) : 1
+
 function today(): string {
   return new Date().toISOString().slice(0, 10)
 }
@@ -62,7 +68,12 @@ function loadFromParam(): Partial<Fields> {
   try {
     const f = new URLSearchParams(location.search).get("f")
     if (!f) return {}
-    const obj = JSON.parse(atob(f)) as Record<string, unknown>
+    // atob yields a Latin-1 byte string; decode those bytes as UTF-8 so
+    // multi-byte chars (e.g. the "•" in net contents) survive the round-trip.
+    const json = new TextDecoder().decode(
+      Uint8Array.from(atob(f), (c) => c.charCodeAt(0)),
+    )
+    const obj = JSON.parse(json) as Record<string, unknown>
     const out: Partial<Fields> = {}
     for (const k of Object.keys(DEFAULTS) as (keyof Fields)[]) {
       if (typeof obj[k] === "string") out[k] = obj[k] as string
@@ -91,6 +102,7 @@ export default function App() {
   const [status, setStatus] = useState<"idle" | "printing" | "sent" | string>(
     "idle",
   )
+  const [count, setCount] = useState(1)
 
   useEffect(() => {
     const data: Record<string, string> = {}
@@ -113,7 +125,7 @@ export default function App() {
       const res = await fetch("/print", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(fields),
+        body: JSON.stringify({ fields, count }),
       })
       if (res.ok) {
         setStatus("sent")
@@ -169,13 +181,28 @@ export default function App() {
                   )}
                 </div>
               ))}
+              <div className="grid gap-1.5">
+                <Label htmlFor="count">Number of labels</Label>
+                <Input
+                  id="count"
+                  type="number"
+                  min={1}
+                  max={MAX_COPIES}
+                  value={count}
+                  onChange={(e) => setCount(clampCopies(Number(e.target.value)))}
+                />
+              </div>
               <Button
                 className="mt-2"
                 disabled={status === "printing"}
                 onClick={printLabel}
               >
                 <Printer />
-                {status === "printing" ? "Printing…" : "Print label"}
+                {status === "printing"
+                  ? "Printing…"
+                  : count > 1
+                    ? `Print ${count} labels`
+                    : "Print label"}
               </Button>
               <p className="text-muted-foreground text-xs leading-relaxed">
                 {status === "sent"

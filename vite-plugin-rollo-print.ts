@@ -40,8 +40,20 @@ const PRINTER = "Rollo"
 // ponytail: the 0.1in margin is the calibration knob — shrink the height a few
 // more points if a worn/miscalibrated roll still ejects a blank.
 const FEED = "Custom.216x137"
+// Hard ceiling on copies per request so a bad client value can't run off a whole
+// roll. The client clamps too, but this is the authoritative limit.
+const MAX_COPIES = 50
 
-async function renderAndPrint(host: string, fieldsJson: string): Promise<void> {
+function clampCopies(n: unknown): number {
+  const c = Math.floor(Number(n))
+  return Number.isFinite(c) && c >= 1 ? Math.min(c, MAX_COPIES) : 1
+}
+
+async function renderAndPrint(
+  host: string,
+  fieldsJson: string,
+  copies: number,
+): Promise<void> {
   // Re-render the running app with these fields, captured at the @page 3×2 size.
   const f = Buffer.from(fieldsJson).toString("base64")
   const url = `http://${host}/?f=${f}`
@@ -57,7 +69,9 @@ async function renderAndPrint(host: string, fieldsJson: string): Promise<void> {
     `--print-to-pdf=${pdf}`,
     url,
   ])
-  await run("lp", ["-d", PRINTER, "-o", `media=${FEED}`, pdf])
+  // -n prints `copies` forms; cupsManualCopies replicates the 1.9in raster page,
+  // so each copy advances exactly one label.
+  await run("lp", ["-d", PRINTER, "-o", `media=${FEED}`, "-n", String(copies), pdf])
 }
 
 const handler: Connect.NextHandleFunction = (req, res) => {
@@ -73,7 +87,14 @@ const handler: Connect.NextHandleFunction = (req, res) => {
   r.on("end", async () => {
     w.setHeader("content-type", "application/json")
     try {
-      await renderAndPrint(r.headers.host || "localhost:5174", body || "{}")
+      // Body is { fields, count }. Only `fields` goes into the headless render;
+      // `count` drives copies and is clamped server-side.
+      const { fields = {}, count } = JSON.parse(body || "{}")
+      await renderAndPrint(
+        r.headers.host || "localhost:5174",
+        JSON.stringify(fields),
+        clampCopies(count),
+      )
       w.statusCode = 200
       w.end(JSON.stringify({ ok: true }))
     } catch (e) {

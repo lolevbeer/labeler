@@ -8,7 +8,19 @@ export function Logo({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <g fill="currentColor" fillRule="evenodd">
+      {/* Same-color stroke dilates every filled shape outward, fattening the thin
+          wheat stems so they survive rasterization at the Rollo's 203 dpi (a
+          ~1-dot stem otherwise prints as broken specks). Round joins keep the
+          tendrils from growing spiky points. Tune strokeWidth (viewBox units) to
+          trade legibility vs. detail; ~10 ≈ 2 extra printer dots at 0.55in tall. */}
+      <g
+        fill="currentColor"
+        fillRule="evenodd"
+        stroke="currentColor"
+        strokeWidth={10}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      >
         <g transform="translate(0.891391, 0.103758)" fill="currentColor">
           <path
             transform="translate(365.153882, 262.449677) scale(-1, 1) translate(-365.153882, -262.449677)"

@@ -83,11 +83,11 @@
   justify-content: center;
   gap: 0.06in;
   font-weight: 700;
-  font-size: 14pt;
+  font-size: 16pt;
   letter-spacing: 0.02em;
 }
 .label .brewery .logo {
-  height: 0.3in;
+  height: 0.55in;
   width: auto;
   flex: none;
 }
